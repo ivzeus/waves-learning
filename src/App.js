@@ -1,11 +1,68 @@
 import React from 'react'
 import './App.css'
 import { Box, Button, MenuItem, Select } from '@material-ui/core'
-import { JsonEditor as Editor } from 'jsoneditor-react'
-import 'jsoneditor-react/es/editor.min.css'
+import ReactJson from 'react-json-view'
 import { transfer, broadcast } from '@waves/waves-transactions'
+import Utils from './Utils'
 
 class App extends React.Component {
+  NETWORK_INFO = {
+    testnet: {
+      url: '',
+      chainId: 84
+    },
+    mainnet: {
+      url: '',
+      chainId: 82
+    }
+  }
+
+  state = {
+    network: 'testnet',
+    transactionType: null,
+    transactionObject: {
+      amount: 0,
+      recipient: '',
+      fee: 1000000,
+      assetId: 'WAVES',
+      attachment: '',
+      timestamp: Date.now(),
+      chainId: 84
+    }
+  }
+
+  _getNetworkInfo() {
+    try {
+      return this.NETWORK_INFO[this.state.network]
+    } catch (err) {
+      return this.NETWORK_INFO['testnet']
+    }
+  }
+
+  _onNetworkChange(ev) {
+    this.setState({
+      network: ev.target.value
+    })
+  }
+
+  _onTransactionTypeChange(ev) {
+    this.setState({
+      transactionType: ev.target.value,
+      transactionObject: Utils.getTransactionByType(
+        ev.target.value,
+        this._getNetworkInfo()
+      )
+    })
+  }
+
+  _onCopyTransaction() {}
+
+  _onBroadcastTransaction() {}
+
+  _onJSONEditorChange(ev) {
+    this.setState({ transactionObject: ev.updated_src })
+  }
+
   onBroadcast({ amount, asset, fee, recipient, seed }) {
     const signedTx = transfer(
       {
@@ -34,10 +91,10 @@ class App extends React.Component {
     const _this = this
     return (
       <div className="App">
-        <Box>
+        <Box alignItems="center">
           <Select
-            // value={values.age}
-            // onChange={handleChange}
+            value={this.state.network}
+            onChange={ev => _this._onNetworkChange(ev)}
             // inputProps={{
             //   name: 'age',
             //   id: 'age-simple',
@@ -47,24 +104,23 @@ class App extends React.Component {
             <MenuItem value="" disabled>
               Network
             </MenuItem>
-            <MenuItem value={10}>Testnet</MenuItem>
-            <MenuItem value={20}>Mainnet</MenuItem>
+            <MenuItem value="testnet">Testnet</MenuItem>
+            <MenuItem value="mainnet">Mainnet</MenuItem>
           </Select>
         </Box>
-        <Box
-          flexDirection="row"
-          alignItems="center"
-          style={{ margin: '10px 100px 0px 100px', minWidth: 400 }}
-        >
-          <Editor
-            value={{ key: 'value' }}
-            style={{ margin: '40px 100px 0px 100px' }}
+        <Box style={{ margin: '10px 100px 0px 100px' }}>
+          <ReactJson
+            src={this.state.transactionObject}
+            style={{ textAlign: 'left', maxWidth: 400 }}
+            onEdit={edit => _this._onJSONEditorChange(edit)}
+            onAdd={add => _this._onJSONEditorChange(add)}
+            onDelete={del => _this._onJSONEditorChange(del)}
           />
         </Box>
-        <Box flexDirection="row">
+        <Box flexDirection="row" alignItems="center">
           <Select
-            // value={values.age}
-            // onChange={handleChange}
+            value={this.state.transactionType}
+            onChange={ev => _this._onTransactionTypeChange(ev)}
             // inputProps={{
             //   name: 'age',
             //   id: 'age-simple',
@@ -74,11 +130,14 @@ class App extends React.Component {
             <MenuItem value="" disabled>
               Create
             </MenuItem>
-            <MenuItem value={10}>SetScriptTransaction</MenuItem>
-            <MenuItem value={20}>SetAssetScriptTransaction</MenuItem>
-            <MenuItem value={30}>IssueTransaction</MenuItem>
-            <MenuItem value={40}>ReIssueTransaction</MenuItem>
-            <MenuItem value={50}>DataTransaction</MenuItem>
+            <MenuItem value="setScript">SetScriptTransaction</MenuItem>
+            <MenuItem value="setAssetScript">
+              SetAssetScriptTransaction
+            </MenuItem>
+            <MenuItem value="issue">IssueTransaction</MenuItem>
+            <MenuItem value="reissue">ReIssueTransaction</MenuItem>
+            <MenuItem value="data">DataTransaction</MenuItem>
+            <MenuItem value="transfer">TransferTransaction</MenuItem>
           </Select>
           <Button variant="contained" color="info" style={{ margin: 10 }}>
             Add Proof
@@ -86,10 +145,14 @@ class App extends React.Component {
           <Button variant="contained" color="info" style={{ margin: 10 }}>
             Copy
           </Button>
+          <Button variant="contained" color="info" style={{ margin: 10 }}>
+            Paste
+          </Button>
           <Button
             variant="contained"
             color="primary"
             style={{ margin: 10 }}
+            disabled={this.state.transactionType === null}
             onClick={() =>
               _this.onBroadcast({
                 amount: 1,
