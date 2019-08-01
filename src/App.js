@@ -1,41 +1,43 @@
 import React from 'react'
 import './App.css'
-import { Box, Button, MenuItem, Select } from '@material-ui/core'
+import {
+  Button,
+  Grid,
+  Icon,
+  InputLabel,
+  MenuItem,
+  Paper,
+  Select
+} from '@material-ui/core'
+import NetworkSelect from './components/NetworkSelect'
+import TransactionSelect from './components/TransactionSelect'
 import ReactJson from 'react-json-view'
-import { transfer, broadcast } from '@waves/waves-transactions'
-import Utils from './Utils'
+import Utils from './utils/TXUtils'
+import TXUtils from './utils/TXUtils'
 
 class App extends React.Component {
-  NETWORK_INFO = {
-    testnet: {
-      url: '',
-      chainId: 84
-    },
-    mainnet: {
-      url: '',
-      chainId: 82
-    }
-  }
-
   state = {
     network: 'testnet',
     transactionType: null,
-    transactionObject: {
-      amount: 0,
-      recipient: '',
-      fee: 1000000,
-      assetId: 'WAVES',
-      attachment: '',
-      timestamp: Date.now(),
-      chainId: 84
-    }
+    transactionObject: Utils.getTransactionByType('', this._getNetworkInfo())
   }
 
   _getNetworkInfo() {
+    const NETWORK_INFO = {
+      testnet: {
+        url: '',
+        chainId: 84
+      },
+      mainnet: {
+        url: '',
+        chainId: 82
+      }
+    }
+
     try {
-      return this.NETWORK_INFO[this.state.network]
+      return NETWORK_INFO[this.state.network]
     } catch (err) {
-      return this.NETWORK_INFO['testnet']
+      return NETWORK_INFO['testnet']
     }
   }
 
@@ -47,7 +49,6 @@ class App extends React.Component {
 
   _onTransactionTypeChange(ev) {
     this.setState({
-      transactionType: ev.target.value,
       transactionObject: Utils.getTransactionByType(
         ev.target.value,
         this._getNetworkInfo()
@@ -59,114 +60,139 @@ class App extends React.Component {
 
   _onBroadcastTransaction() {}
 
+  async _onSignTransaction() {
+    const txData = TXUtils.getTxDataForSigning(this.state.transactionObject)
+    const resp = await TXUtils.signTransaction(txData)
+    console.log('[signTx] resp:', resp)
+  }
+
   _onJSONEditorChange(ev) {
     this.setState({ transactionObject: ev.updated_src })
   }
 
-  onBroadcast({ amount, asset, fee, recipient, seed }) {
-    const signedTx = transfer(
-      {
-        amount: parseInt(amount),
-        recipient,
-        fee: fee || 1000000,
-        assetId: asset,
-        attachment: '',
-        timestamp: Date.now(),
-        chainId: parseInt(84)
-      },
-      seed
-    )
-
-    broadcast(signedTx, 'https://testnodes.wavesnodes.com')
-      .then(resp => {
-        console.log('Transfer success, receipt:')
-        console.log(resp)
-      })
-      .catch(err => {
-        console.log(`Transfer failure, error: ${JSON.stringify(err)}`)
-      })
+  async componentDidMount() {
+    // await TXUtils.initializeKeeperAPI()
   }
 
   render() {
     const _this = this
+
     return (
-      <div className="App">
-        <Box alignItems="center">
-          <Select
-            value={this.state.network}
-            onChange={ev => _this._onNetworkChange(ev)}
-            // inputProps={{
-            //   name: 'age',
-            //   id: 'age-simple',
-            // }}
-            style={{ margin: '30px 10px 0px 10px' }}
-          >
-            <MenuItem value="" disabled>
-              Network
-            </MenuItem>
-            <MenuItem value="testnet">Testnet</MenuItem>
-            <MenuItem value="mainnet">Mainnet</MenuItem>
-          </Select>
-        </Box>
-        <Box style={{ margin: '10px 100px 0px 100px' }}>
-          <ReactJson
-            src={this.state.transactionObject}
-            style={{ textAlign: 'left', maxWidth: 400 }}
-            onEdit={edit => _this._onJSONEditorChange(edit)}
-            onAdd={add => _this._onJSONEditorChange(add)}
-            onDelete={del => _this._onJSONEditorChange(del)}
-          />
-        </Box>
-        <Box flexDirection="row" alignItems="center">
-          <Select
-            value={this.state.transactionType}
-            onChange={ev => _this._onTransactionTypeChange(ev)}
-            // inputProps={{
-            //   name: 'age',
-            //   id: 'age-simple',
-            // }}
-            style={{ margin: 10 }}
-          >
-            <MenuItem value="" disabled>
-              Create
-            </MenuItem>
-            <MenuItem value="setScript">SetScriptTransaction</MenuItem>
-            <MenuItem value="setAssetScript">
-              SetAssetScriptTransaction
-            </MenuItem>
-            <MenuItem value="issue">IssueTransaction</MenuItem>
-            <MenuItem value="reissue">ReIssueTransaction</MenuItem>
-            <MenuItem value="data">DataTransaction</MenuItem>
-            <MenuItem value="transfer">TransferTransaction</MenuItem>
-          </Select>
-          <Button variant="contained" color="info" style={{ margin: 10 }}>
-            Add Proof
-          </Button>
-          <Button variant="contained" color="info" style={{ margin: 10 }}>
-            Copy
-          </Button>
-          <Button variant="contained" color="info" style={{ margin: 10 }}>
-            Paste
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            style={{ margin: 10 }}
-            disabled={this.state.transactionType === null}
-            onClick={() =>
-              _this.onBroadcast({
-                amount: 1,
-                asset: 'WAVES',
-                recipient: '3N9Sgptqbbc9whta6iLeeQENfHd833G9hQE',
-                seed:
-                  'usual company hill garbage bean book illness mother help brief catch vocal'
-              })
-            }
-          >
-            Broadcast
-          </Button>
-        </Box>
-      </div>
+      <Grid container>
+        <Grid
+          container
+          direction="row"
+          justify="flex-start"
+          alignItems="center"
+        >
+          <Grid item>
+            <NetworkSelect
+              _onNetworkChange={ev => _this._onNetworkChange(ev)}
+            />
+          </Grid>
+
+          <Grid item>
+            <TransactionSelect
+              _onTransactionTypeChange={ev =>
+                _this._onTransactionTypeChange(ev)
+              }
+            />
+          </Grid>
+        </Grid>
+
+        <Grid
+          container
+          direction="row"
+          justify="flex-start"
+          alignItems="stretch"
+        >
+          <Grid item>
+            <Paper>
+              <ReactJson
+                src={this.state.transactionObject}
+                style={{ textAlign: 'left' }}
+                onEdit={edit => _this._onJSONEditorChange(edit)}
+                onAdd={add => _this._onJSONEditorChange(add)}
+                onDelete={del => _this._onJSONEditorChange(del)}
+              />
+            </Paper>
+          </Grid>
+          <Grid item>
+            <Paper>
+              <ReactJson
+                src={this.state.transactionObject}
+                style={{ textAlign: 'left' }}
+                onEdit={edit => _this._onJSONEditorChange(edit)}
+                onAdd={add => _this._onJSONEditorChange(add)}
+                onDelete={del => _this._onJSONEditorChange(del)}
+              />
+            </Paper>
+          </Grid>
+        </Grid>
+
+        <Grid
+          container
+          direction="row"
+          justify="flex-start"
+          alignItems="flex-end"
+        >
+          <Grid item>
+            <InputLabel htmlFor="form-select-proof-order">
+              Proof order
+            </InputLabel>
+            <Select
+              displayEmpty
+              value={this.state.network}
+              onChange={ev => _this._onNetworkChange(ev)}
+              inputProps={{
+                id: 'form-select-proof-order'
+              }}
+            >
+              <MenuItem value="" disabled>
+                Proof order
+              </MenuItem>
+              <MenuItem value="0">0</MenuItem>
+              <MenuItem value="1">1</MenuItem>
+              <MenuItem value="2">2</MenuItem>
+              <MenuItem value="3">3</MenuItem>
+              <MenuItem value="4">4</MenuItem>
+              <MenuItem value="5">5</MenuItem>
+            </Select>
+          </Grid>
+
+          <Grid item>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={() => _this._onSignTransaction()}
+            >
+              Add Proof
+            </Button>
+          </Grid>
+
+          <Grid item>
+            <Button variant="contained" color="info">
+              Copy
+            </Button>
+          </Grid>
+
+          <Grid item>
+            <Button
+              variant="contained"
+              color="primary"
+              disabled={this.state.transactionType === null}
+            >
+              Broadcast
+            </Button>
+          </Grid>
+
+          <Grid item xs="12" sm="12">
+            <Button id="btn-other-configs" variant="contained" color="primary">
+              <Icon>add</Icon>ENV CONFIGS
+            </Button>
+          </Grid>
+        </Grid>
+      </Grid>
     )
   }
 }

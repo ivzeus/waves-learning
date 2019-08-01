@@ -1,4 +1,43 @@
-class Utils {
+class TransactionUtils {
+  async initializeKeeperAPI() {
+    console.log(window.WavesKeeper)
+  }
+
+  async signTransaction(txData) {
+    try {
+      const resp = await window.WavesKeeper.signTransaction(txData)
+      return {
+        status: 200,
+        message: 'success',
+        data: JSON.parse(resp)
+      }
+    } catch (error) {
+      return {
+        status: 500,
+        message:
+          'WavesKeeper is not installed on your browser, or another problem occurs',
+        data: error
+      }
+    }
+  }
+
+  getTxDataForSigning(txObj) {
+    return {
+      type: 4,
+      data: {
+        amount: {
+          assetId: 'WAVES',
+          tokens: '1.567'
+        },
+        fee: {
+          assetId: 'WAVES',
+          tokens: '0.001'
+        },
+        recipient: 'test'
+      }
+    }
+  }
+
   getTransactionByType(type, networkInfo) {
     console.log(networkInfo)
     // <MenuItem value="setScript">SetScriptTransaction</MenuItem>
@@ -49,4 +88,4 @@ class Utils {
   }
 }
 
-export default new Utils()
+export default new TransactionUtils()
