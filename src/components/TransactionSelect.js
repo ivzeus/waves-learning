@@ -1,46 +1,34 @@
-import React from 'react'
+import React, { useContext } from 'react'
+import { observer } from 'mobx-react-lite'
 import { InputLabel, MenuItem, Select } from '@material-ui/core'
+import { Transactions } from '../stores'
 
-class TransactionSelect extends React.Component {
-  state = {
-    transactionType: null
-  }
+export const TransactionSelect = observer(() => {
+  const transactionStore = useContext(Transactions)
 
-  handleChange = ev => {
-    const { _onTransactionTypeChange } = this.props
-    if (_onTransactionTypeChange) _onTransactionTypeChange(ev)
-    this.setState({
-      transactionType: ev.target.value
-    })
-  }
-
-  render() {
-    const _this = this
-
-    return (
-      <React.Fragment>
-        <InputLabel htmlFor="form-select-tx-type">Transaction type</InputLabel>
-        <Select
-          displayEmpty
-          value={this.state.transactionType}
-          onChange={ev => _this.handleChange(ev)}
-          inputProps={{
-            id: 'form-select-tx-type'
-          }}
-        >
-          <MenuItem value="" disabled>
-            TX obj
-          </MenuItem>
-          <MenuItem value={13}>SetScriptTransaction</MenuItem>
-          <MenuItem value={15}>SetAssetScriptTransaction</MenuItem>
-          <MenuItem value={3}>IssueTransaction</MenuItem>
-          <MenuItem value={5}>ReIssueTransaction</MenuItem>
-          <MenuItem value={12}>DataTransaction</MenuItem>
-          <MenuItem value={4}>TransferTransaction</MenuItem>
-        </Select>
-      </React.Fragment>
-    )
-  }
-}
+  return (
+    <React.Fragment>
+      <InputLabel htmlFor="form-select-tx-type">Transaction type</InputLabel>
+      <Select
+        displayEmpty
+        value={transactionStore.transactionType}
+        onChange={ev => transactionStore.setTransaction(ev.target.value)}
+        inputProps={{
+          id: 'form-select-tx-type'
+        }}
+      >
+        <MenuItem value="" disabled>
+          TX obj
+        </MenuItem>
+        <MenuItem value={13}>SetScriptTransaction</MenuItem>
+        <MenuItem value={15}>SetAssetScriptTransaction</MenuItem>
+        <MenuItem value={3}>IssueTransaction</MenuItem>
+        <MenuItem value={5}>ReIssueTransaction</MenuItem>
+        <MenuItem value={12}>DataTransaction</MenuItem>
+        <MenuItem value={4}>TransferTransaction</MenuItem>
+      </Select>
+    </React.Fragment>
+  )
+})
 
 export default TransactionSelect

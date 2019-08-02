@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import { observer } from 'mobx-react-lite'
+import { observer, useObservable } from 'mobx-react-lite'
 
 import './App.css'
 import {
@@ -20,6 +20,12 @@ import Utils from './utils/TXUtils'
 import TXUtils from './utils/TXUtils'
 
 export const App = observer(() => {
+  const state = useObservable({
+    proofOrder: 0,
+    setProofOrder(order) {
+      state.proofOrder = order
+    }
+  })
   const networkStore = useContext(Network)
   const transactionsStore = useContext(Transactions)
 
@@ -27,17 +33,11 @@ export const App = observer(() => {
     <Grid container>
       <Grid container direction="row" justify="flex-start" alignItems="center">
         <Grid item>
-          <NetworkSelect
-            _onNetworkChange={ev => networkStore.changeNetwork(ev.target.value)}
-          />
+          <NetworkSelect />
         </Grid>
 
         <Grid item>
-          <TransactionSelect
-            _onTransactionTypeChange={ev =>
-              transactionsStore.setTransaction(ev.target.value)
-            }
-          />
+          <TransactionSelect />
         </Grid>
       </Grid>
 
@@ -47,9 +47,15 @@ export const App = observer(() => {
             <ReactJson
               src={transactionsStore.rawTransaction}
               style={{ textAlign: 'left' }}
-              // onEdit={edit => _this._onJSONEditorChange(edit)}
-              // onAdd={add => _this._onJSONEditorChange(add)}
-              // onDelete={del => _this._onJSONEditorChange(del)}
+              onEdit={edit =>
+                transactionsStore.updateRawTransaction(edit.updated_src)
+              }
+              onAdd={add =>
+                transactionsStore.updateRawTransaction(add.updated_src)
+              }
+              onDelete={del =>
+                transactionsStore.updateRawTransaction(del.updated_src)
+              }
             />
           </Paper>
         </Grid>
@@ -66,20 +72,18 @@ export const App = observer(() => {
         </Grid>
       </Grid>
 
-      {/* <Grid
+      <Grid
         container
         direction="row"
         justify="flex-start"
         alignItems="flex-end"
       >
         <Grid item>
-          <InputLabel htmlFor="form-select-proof-order">
-            Proof order
-          </InputLabel>
+          <InputLabel htmlFor="form-select-proof-order">Proof order</InputLabel>
           <Select
             displayEmpty
-            value={this.state.network}
-            onChange={ev => _this._onNetworkChange(ev)}
+            value={state.proofOrder}
+            onChange={ev => state.setProofOrder(ev.target.value)}
             inputProps={{
               id: 'form-select-proof-order'
             }}
@@ -100,34 +104,32 @@ export const App = observer(() => {
           <Button
             variant="contained"
             color="secondary"
-            onClick={() => _this._onSignTransaction()}
+            // onClick={() => _this._onSignTransaction()}
           >
             Add Proof
           </Button>
         </Grid>
 
         <Grid item>
-          <Button variant="contained" color="info">
-            Copy
-          </Button>
+          <Button variant="contained">Copy</Button>
         </Grid>
 
         <Grid item>
           <Button
             variant="contained"
             color="primary"
-            disabled={this.state.transactionType === null}
+            disabled={!transactionsStore.signedTransaction}
           >
             Publish
           </Button>
         </Grid>
 
-        <Grid item xs="12" sm="12">
+        <Grid item xs={12} sm={12}>
           <Button id="btn-other-configs" variant="contained" color="primary">
             <Icon>add</Icon>ENV CONFIGS
           </Button>
         </Grid>
-      </Grid> */}
+      </Grid>
     </Grid>
   )
 })
