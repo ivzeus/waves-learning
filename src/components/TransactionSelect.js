@@ -31,12 +31,12 @@ class TransactionSelect extends React.Component {
           <MenuItem value="" disabled>
             TX obj
           </MenuItem>
-          <MenuItem value="setScript">SetScriptTransaction</MenuItem>
-          <MenuItem value="setAssetScript">SetAssetScriptTransaction</MenuItem>
-          <MenuItem value="issue">IssueTransaction</MenuItem>
-          <MenuItem value="reissue">ReIssueTransaction</MenuItem>
-          <MenuItem value="data">DataTransaction</MenuItem>
-          <MenuItem value="transfer">TransferTransaction</MenuItem>
+          <MenuItem value={13}>SetScriptTransaction</MenuItem>
+          <MenuItem value={15}>SetAssetScriptTransaction</MenuItem>
+          <MenuItem value={3}>IssueTransaction</MenuItem>
+          <MenuItem value={5}>ReIssueTransaction</MenuItem>
+          <MenuItem value={12}>DataTransaction</MenuItem>
+          <MenuItem value={4}>TransferTransaction</MenuItem>
         </Select>
       </React.Fragment>
     )
