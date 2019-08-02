@@ -9,7 +9,10 @@ export class Transactions {
 
   _getTransactionTemplate(type) {
     try {
-      return TransactionTemplates[type]
+      return {
+        timestamp: Date.now(),
+        ...TransactionTemplates[type]
+      }
     } catch (error) {
       return TransactionTemplates[4] // default to transfer transaction
     }
@@ -23,7 +26,19 @@ export class Transactions {
     return toJS(this._rawTxObj)
   }
 
+  rawTransactionForSigning({ networkStore }) {
+    const _rawTx = {
+      type: this._txType,
+      data: {
+        chainId: networkStore.chainID,
+        ...this._rawTxObj
+      }
+    }
+    return toJS(_rawTx)
+  }
+
   get signedTransaction() {
+    console.log(toJS(this._signedTxObj))
     return toJS(this._signedTxObj)
   }
 
@@ -31,6 +46,10 @@ export class Transactions {
 
   updateRawTransaction(data) {
     this._rawTxObj = data
+  }
+
+  updateSignTransaction(data) {
+    this._signedTxObj = data
   }
 
   setTransaction(type) {

@@ -1,136 +1,255 @@
-import React, { useContext } from 'react'
+import React, { useContext, useEffect } from 'react'
 import { observer, useObservable } from 'mobx-react-lite'
-
 import './App.css'
 import {
+  AppBar,
   Button,
+  CircularProgress,
   Grid,
   Icon,
+  IconButton,
   InputLabel,
   MenuItem,
   Paper,
-  Select
+  Select,
+  Snackbar,
+  Toolbar,
+  Typography
 } from '@material-ui/core'
+// import {
+//   DialogActions,
+//   DialogContent,
+//   DialogContentText,
+//   DialogTitle
+// } from '@material-ui/core'
+import MenuIcon from '@material-ui/icons/Menu'
+import CloseIcon from '@material-ui/icons/Close'
 import ReactJson from 'react-json-view'
-
 import { Network, Transactions } from './stores'
-
 import { NetworkSelect, TransactionSelect } from './components'
-import Utils from './utils/TXUtils'
-import TXUtils from './utils/TXUtils'
 
 export const App = observer(() => {
-  const state = useObservable({
-    proofOrder: 0,
-    setProofOrder(order) {
-      state.proofOrder = order
-    }
-  })
   const networkStore = useContext(Network)
   const transactionsStore = useContext(Transactions)
 
+  const state = useObservable({
+    loading: true,
+    proofOrder: 0,
+    wavesKeeper: { initialized: false },
+    showSnackbar: false,
+    errorMessage: '',
+    setProofOrder(order) {
+      state.proofOrder = order
+    },
+    setLoading(loading) {
+      state.loading = loading
+    },
+    setError(errorMessage = null) {
+      if (errorMessage) {
+        state.errorMessage = errorMessage
+        state.showSnackbar = true
+      } else {
+        state.errorMessage = ''
+        state.showSnackbar = false
+      }
+    },
+    setWavesKeeper(info) {
+      state.wavesKeeper = info
+    }
+  })
+
+  useEffect(() => {
+    const { WavesKeeper } = window
+    if (WavesKeeper) {
+      WavesKeeper.publicState()
+        .then(info => {
+          state.setWavesKeeper(info)
+        })
+        .catch(error => {
+          state.setWavesKeeper({ initialized: false })
+        })
+    }
+  }, [state, state.wavesKeeper.initialized])
+
+  // if (state.loading) return <CircularProgress />
+
   return (
-    <Grid container>
-      <Grid container direction="row" justify="flex-start" alignItems="center">
-        <Grid item>
-          <NetworkSelect />
-        </Grid>
+    <div>
+      <AppBar position="static">
+        <Toolbar>
+          <IconButton edge="start" color="inherit" aria-label="menu">
+            <MenuIcon />
+          </IconButton>
 
-        <Grid item>
-          <TransactionSelect />
-        </Grid>
+          <Typography variant="h6">Waves Transaction helper</Typography>
+
+          <IconButton edge="end" color="inherit" aria-label="add">
+            <Icon>add</Icon>
+          </IconButton>
+        </Toolbar>
+      </AppBar>
+
+      <Grid item>
+        <Paper>
+          {state.wavesKeeper.initialized ? (
+            <Typography variant="subtitle1" component="h3" color="primary">
+              WavesKeeper v{state.wavesKeeper.version} initialized!
+            </Typography>
+          ) : (
+            <Typography variant="subtitle1" component="h3" color="error">
+              WavesKeeper not installed!
+            </Typography>
+          )}
+        </Paper>
       </Grid>
 
-      <Grid container direction="row" justify="flex-start" alignItems="stretch">
-        <Grid item>
-          <Paper>
-            <ReactJson
-              src={transactionsStore.rawTransaction}
-              style={{ textAlign: 'left' }}
-              onEdit={edit =>
-                transactionsStore.updateRawTransaction(edit.updated_src)
-              }
-              onAdd={add =>
-                transactionsStore.updateRawTransaction(add.updated_src)
-              }
-              onDelete={del =>
-                transactionsStore.updateRawTransaction(del.updated_src)
-              }
-            />
-          </Paper>
-        </Grid>
-        <Grid item>
-          <Paper>
-            <ReactJson
-              src={transactionsStore.signedTransaction}
-              style={{ textAlign: 'left' }}
-              // onEdit={edit => _this._onJSONEditorChange(edit)}
-              // onAdd={add => _this._onJSONEditorChange(add)}
-              // onDelete={del => _this._onJSONEditorChange(del)}
-            />
-          </Paper>
-        </Grid>
-      </Grid>
+      <Grid container>
+        <Grid
+          container
+          direction="row"
+          justify="flex-start"
+          alignItems="center"
+        >
+          <Grid item>
+            <NetworkSelect />
+          </Grid>
 
-      <Grid
-        container
-        direction="row"
-        justify="flex-start"
-        alignItems="flex-end"
-      >
-        <Grid item>
-          <InputLabel htmlFor="form-select-proof-order">Proof order</InputLabel>
-          <Select
-            displayEmpty
-            value={state.proofOrder}
-            onChange={ev => state.setProofOrder(ev.target.value)}
-            inputProps={{
-              id: 'form-select-proof-order'
-            }}
-          >
-            <MenuItem value="" disabled>
+          <Grid item>
+            <TransactionSelect />
+          </Grid>
+        </Grid>
+
+        <Grid
+          container
+          direction="row"
+          justify="flex-start"
+          alignItems="stretch"
+        >
+          <Grid item>
+            <Paper>
+              <ReactJson
+                src={transactionsStore.rawTransaction}
+                style={{ textAlign: 'left' }}
+                onEdit={edit =>
+                  transactionsStore.updateRawTransaction(edit.updated_src)
+                }
+                onAdd={add =>
+                  transactionsStore.updateRawTransaction(add.updated_src)
+                }
+                onDelete={del =>
+                  transactionsStore.updateRawTransaction(del.updated_src)
+                }
+              />
+            </Paper>
+          </Grid>
+          <Grid item>
+            <Paper>
+              <ReactJson
+                src={transactionsStore.signedTransaction}
+                style={{ textAlign: 'left' }}
+              />
+            </Paper>
+          </Grid>
+        </Grid>
+
+        <Grid
+          container
+          direction="row"
+          justify="flex-start"
+          alignItems="flex-end"
+        >
+          <Grid item>
+            <InputLabel htmlFor="form-select-proof-order">
               Proof order
-            </MenuItem>
-            <MenuItem value="0">0</MenuItem>
-            <MenuItem value="1">1</MenuItem>
-            <MenuItem value="2">2</MenuItem>
-            <MenuItem value="3">3</MenuItem>
-            <MenuItem value="4">4</MenuItem>
-            <MenuItem value="5">5</MenuItem>
-          </Select>
+            </InputLabel>
+            <Select
+              displayEmpty
+              value={state.proofOrder}
+              onChange={ev => state.setProofOrder(ev.target.value)}
+              inputProps={{
+                id: 'form-select-proof-order'
+              }}
+            >
+              <MenuItem value="" disabled>
+                Proof order
+              </MenuItem>
+              <MenuItem value="0">0</MenuItem>
+              <MenuItem value="1">1</MenuItem>
+              <MenuItem value="2">2</MenuItem>
+              <MenuItem value="3">3</MenuItem>
+              <MenuItem value="4">4</MenuItem>
+              <MenuItem value="5">5</MenuItem>
+            </Select>
+          </Grid>
+
+          <Grid item>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={() => {
+                const txData = transactionsStore.rawTransactionForSigning({
+                  networkStore
+                })
+                window.WavesKeeper.signTransaction(txData)
+                  .then(data => {
+                    const parsedData = JSON.parse(data)
+                    if (state.proofOrder > 0) {
+                      const sig = parsedData.proofs[0]
+                      parsedData.proofs[0] = ''
+                      parsedData.proofs[state.proofOrder] = sig
+                    }
+                    transactionsStore.updateSignTransaction(parsedData)
+                  })
+                  .catch(error => {
+                    console.log(error)
+                    state.setError(error.message)
+                  })
+              }}
+            >
+              Add Proof
+            </Button>
+          </Grid>
+
+          <Grid item>
+            <Button variant="contained">Copy</Button>
+          </Grid>
+
+          <Grid item>
+            <Button
+              variant="contained"
+              color="primary"
+              disabled={!transactionsStore.signedTransaction}
+            >
+              Publish
+            </Button>
+          </Grid>
         </Grid>
 
-        <Grid item>
-          <Button
-            variant="contained"
-            color="secondary"
-            // onClick={() => _this._onSignTransaction()}
-          >
-            Add Proof
-          </Button>
-        </Grid>
-
-        <Grid item>
-          <Button variant="contained">Copy</Button>
-        </Grid>
-
-        <Grid item>
-          <Button
-            variant="contained"
-            color="primary"
-            disabled={!transactionsStore.signedTransaction}
-          >
-            Publish
-          </Button>
-        </Grid>
-
-        <Grid item xs={12} sm={12}>
-          <Button id="btn-other-configs" variant="contained" color="primary">
-            <Icon>add</Icon>ENV CONFIGS
-          </Button>
-        </Grid>
+        <Snackbar
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'left'
+          }}
+          open={state.showSnackbar}
+          autoHideDuration={4000}
+          onClose={() => state.setError()}
+          ContentProps={{
+            'aria-describedby': 'message-id'
+          }}
+          message={<span id="message-id">{state.errorMessage}</span>}
+          action={[
+            <IconButton
+              key="close"
+              aria-label="close"
+              color="inherit"
+              onClick={() => state.setError()}
+            >
+              <CloseIcon />
+            </IconButton>
+          ]}
+        />
       </Grid>
-    </Grid>
+    </div>
   )
 })
 // class App extends React.Component {

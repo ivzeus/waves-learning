@@ -4,13 +4,17 @@ const TransactionTemplates = [
   {}, // not used
   {}, // issue transaction
   {
-    amount: 0,
+    amount: {
+      coins: 0,
+      assetId: 'WAVES'
+    },
     recipient: 'recipient_address',
-    fee: 1000000,
+    fee: {
+      coins: 1000000,
+      assetId: 'WAVES'
+    },
     assetId: 'WAVES',
-    attachment: 'any_message',
-    timestamp: Date.now(),
-    chainId: ''
+    attachment: 'any_message'
   }, // transfer
   {}, // reissue
   {}, // burn
@@ -22,15 +26,19 @@ const TransactionTemplates = [
   {}, // data
   {
     script: 'base64:compiled_script',
-    fee: 100400000,
-    chainId: ''
+    fee: {
+      coins: 100400000,
+      assetId: 'WAVES'
+    }
   }, // set script
   {}, // sponsor
   {
     assetId: 'asset_id',
     script: 'base64:compiled_script',
-    fee: 100400000,
-    chainId: ''
+    fee: {
+      coins: 100400000,
+      assetId: 'WAVES'
+    }
   }, // set asset script
   {}, // invoke
   {} //
