@@ -4,11 +4,11 @@ import './App.css'
 import {
   AppBar,
   Button,
-  CircularProgress,
   Grid,
   Icon,
   IconButton,
   InputLabel,
+  LinearProgress,
   MenuItem,
   Paper,
   Select,
@@ -22,13 +22,11 @@ import {
 //   DialogContentText,
 //   DialogTitle
 // } from '@material-ui/core'
-import MenuIcon from '@material-ui/icons/Menu'
-import CloseIcon from '@material-ui/icons/Close'
 import ReactJson from 'react-json-view'
 import { Network, Transactions } from './stores'
 import { NetworkSelect, TransactionSelect } from './components'
 
-export const App = observer(() => {
+export const App = observer(props => {
   const networkStore = useContext(Network)
   const transactionsStore = useContext(Transactions)
 
@@ -71,54 +69,69 @@ export const App = observer(() => {
           state.setLoading(false)
         })
     } else {
-      state.setLoading(false)
+      setTimeout(() => state.setLoading(false), 3000)
     }
   }, [state, state.wavesKeeper.initialized])
 
-  if (state.loading) return <CircularProgress />
+  if (state.loading) return <LinearProgress />
 
   return (
     <div>
       <AppBar position="static">
         <Toolbar>
           <IconButton edge="start" color="inherit" aria-label="menu">
-            <MenuIcon />
+            <Icon>settings</Icon>
           </IconButton>
 
           <Typography variant="h6">Waves Transaction helper</Typography>
-
-          <IconButton edge="end" color="inherit" aria-label="add">
-            <Icon>add</Icon>
-          </IconButton>
         </Toolbar>
       </AppBar>
 
-      <Grid item>
-        <Paper>
-          {state.wavesKeeper.initialized ? (
-            <Typography variant="subtitle1" component="h3" color="primary">
-              WavesKeeper v{state.wavesKeeper.version} initialized!
-            </Typography>
-          ) : (
-            <Typography variant="subtitle1" component="h3" color="error">
-              WavesKeeper not installed!
-            </Typography>
-          )}
-        </Paper>
-      </Grid>
-
       <Grid container>
+        <Grid
+          container
+          direction="column"
+          alignItems="stretch"
+          className="Margin-10"
+        >
+          <Paper
+            className="Padding-10"
+            // open={true}
+            // anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+            // ContentProps={{
+            //   'aria-describedby': 'message-id'
+            // }}
+            // message={
+            //   <span id="message-id">
+            //     {state.wavesKeeper.initialized
+            //       ? `WavesKeeper v${state.wavesKeeper.version} initialized!`
+            //       : 'WavesKeeper not installed'}
+            //   </span>
+            // }
+          >
+            {state.wavesKeeper.initialized ? (
+              <Typography variant="subtitle1" component="h3" color="primary">
+                WavesKeeper v{state.wavesKeeper.version} initialized!
+              </Typography>
+            ) : (
+              <Typography variant="subtitle1" component="h3" color="error">
+                WavesKeeper not installed!
+              </Typography>
+            )}
+          </Paper>
+        </Grid>
+
         <Grid
           container
           direction="row"
           justify="flex-start"
           alignItems="center"
         >
-          <Grid item>
+          <Grid item className="Margin-10">
             <NetworkSelect />
           </Grid>
 
-          <Grid item>
+          <Grid item className="Margin-10">
             <TransactionSelect />
           </Grid>
         </Grid>
@@ -129,8 +142,9 @@ export const App = observer(() => {
           justify="flex-start"
           alignItems="stretch"
         >
-          <Grid item>
-            <Paper>
+          <Grid item sm={12} md={4}>
+            <Paper className="Margin-10 Padding-20">
+              <Typography variant="body2">Raw transaction:</Typography>
               <ReactJson
                 src={transactionsStore.rawTransaction}
                 style={{ textAlign: 'left' }}
@@ -146,8 +160,10 @@ export const App = observer(() => {
               />
             </Paper>
           </Grid>
-          <Grid item>
-            <Paper>
+          {/* <Grid item sm={0} md={1} /> */}
+          <Grid item sm={12} md={4}>
+            <Paper className="Margin-10 Padding-20">
+              <Typography variant="body2">Signed transaction:</Typography>
               <ReactJson
                 src={transactionsStore.signedTransaction}
                 style={{ textAlign: 'left' }}
@@ -161,73 +177,75 @@ export const App = observer(() => {
           direction="row"
           justify="flex-start"
           alignItems="flex-end"
+          className="Padding-10"
         >
-          <Grid item>
-            <InputLabel htmlFor="form-select-proof-order">
-              Proof order
-            </InputLabel>
-            <Select
-              displayEmpty
-              value={state.proofOrder}
-              onChange={ev => state.setProofOrder(ev.target.value)}
-              inputProps={{
-                id: 'form-select-proof-order'
-              }}
-            >
-              <MenuItem value="" disabled>
+          {state.wavesKeeper.initialized && (
+            <Grid item className="Margin-10">
+              <InputLabel htmlFor="form-select-proof-order">
                 Proof order
-              </MenuItem>
-              <MenuItem value="0">0</MenuItem>
-              <MenuItem value="1">1</MenuItem>
-              <MenuItem value="2">2</MenuItem>
-              <MenuItem value="3">3</MenuItem>
-              <MenuItem value="4">4</MenuItem>
-              <MenuItem value="5">5</MenuItem>
-            </Select>
-          </Grid>
+              </InputLabel>
+              <Select
+                displayEmpty
+                value={state.proofOrder}
+                onChange={ev => state.setProofOrder(ev.target.value)}
+                inputProps={{
+                  id: 'form-select-proof-order'
+                }}
+              >
+                <MenuItem value="" disabled>
+                  Proof order
+                </MenuItem>
+                <MenuItem value="0">0</MenuItem>
+                <MenuItem value="1">1</MenuItem>
+                <MenuItem value="2">2</MenuItem>
+                <MenuItem value="3">3</MenuItem>
+                <MenuItem value="4">4</MenuItem>
+                <MenuItem value="5">5</MenuItem>
+              </Select>
+            </Grid>
+          )}
 
-          <Grid item>
-            <Button
-              variant="contained"
-              color="secondary"
-              disabled={!state.wavesKeeper.initialized}
-              onClick={() => {
-                const txData = transactionsStore.rawTransactionForSigning({
-                  networkStore
-                })
-                window.WavesKeeper.signTransaction(txData)
-                  .then(data => {
-                    const parsedData = JSON.parse(data)
-                    if (state.proofOrder > 0) {
-                      const sig = parsedData.proofs[0]
-                      parsedData.proofs[0] = ''
-                      parsedData.proofs[state.proofOrder] = sig
-                    }
-                    transactionsStore.updateSignTransaction(parsedData)
+          {state.wavesKeeper.initialized && (
+            <Grid item className="Margin-10">
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={() => {
+                  const txData = transactionsStore.rawTransactionForSigning({
+                    networkStore
                   })
-                  .catch(error => {
-                    console.log(error)
-                    state.setError(error.message)
-                  })
-              }}
-            >
-              Add Proof
-            </Button>
-          </Grid>
+                  window.WavesKeeper.signTransaction(txData)
+                    .then(data => {
+                      const parsedData = JSON.parse(data)
+                      if (state.proofOrder > 0) {
+                        const sig = parsedData.proofs[0]
+                        parsedData.proofs[0] = ''
+                        parsedData.proofs[state.proofOrder] = sig
+                      }
+                      transactionsStore.updateSignTransaction(parsedData)
+                    })
+                    .catch(error => {
+                      console.log(error)
+                      state.setError(error.message)
+                    })
+                }}
+              >
+                Add Proof
+              </Button>
+            </Grid>
+          )}
 
-          <Grid item>
+          <Grid item className="Margin-10">
             <Button variant="contained">Copy</Button>
           </Grid>
 
-          <Grid item>
-            <Button
-              variant="contained"
-              color="primary"
-              disabled={!state.wavesKeeper.initialized}
-            >
-              Publish
-            </Button>
-          </Grid>
+          {state.wavesKeeper.initialized && (
+            <Grid item className="Margin-10">
+              <Button variant="contained" color="primary">
+                Publish
+              </Button>
+            </Grid>
+          )}
         </Grid>
 
         <Snackbar
@@ -249,7 +267,7 @@ export const App = observer(() => {
               color="inherit"
               onClick={() => state.setError()}
             >
-              <CloseIcon />
+              <Icon>close</Icon>
             </IconButton>
           ]}
         />
@@ -257,69 +275,5 @@ export const App = observer(() => {
     </div>
   )
 })
-// class App extends React.Component {
-//   state = {
-//     network: 'testnet',
-//     transactionType: null,
-//     transactionObject: Utils.getTransactionByType('', this._getNetworkInfo())
-//   }
-
-//   _getNetworkInfo() {
-//     const NETWORK_INFO = {
-//       testnet: {
-//         url: '',
-//         chainId: 84
-//       },
-//       mainnet: {
-//         url: '',
-//         chainId: 82
-//       }
-//     }
-
-//     try {
-//       return NETWORK_INFO[this.state.network]
-//     } catch (err) {
-//       return NETWORK_INFO['testnet']
-//     }
-//   }
-
-//   _onNetworkChange(ev) {
-//     this.setState({
-//       network: ev.target.value
-//     })
-//   }
-
-//   _onTransactionTypeChange(ev) {
-//     this.setState({
-//       transactionObject: Utils.getTransactionByType(
-//         ev.target.value,
-//         this._getNetworkInfo()
-//       )
-//     })
-//   }
-
-//   _onCopyTransaction() {}
-
-//   _onBroadcastTransaction() {}
-
-//   async _onSignTransaction() {
-//     const txData = TXUtils.getTxDataForSigning(this.state.transactionObject)
-//     const resp = await TXUtils.signTransaction(txData)
-//     console.log('[signTx] resp:', resp)
-//   }
-
-//   _onJSONEditorChange(ev) {
-//     this.setState({ transactionObject: ev.updated_src })
-//   }
-
-//   async componentDidMount() {
-//     // await TXUtils.initializeKeeperAPI()
-//   }
-
-//   render = observer(() => {
-//     const store = useContext(Network)
-//     const _this = this
-
-// }
 
 export default App
