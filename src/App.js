@@ -64,14 +64,18 @@ export const App = observer(() => {
       WavesKeeper.publicState()
         .then(info => {
           state.setWavesKeeper(info)
+          state.setLoading(false)
         })
         .catch(error => {
           state.setWavesKeeper({ initialized: false })
+          state.setLoading(false)
         })
+    } else {
+      state.setLoading(false)
     }
   }, [state, state.wavesKeeper.initialized])
 
-  // if (state.loading) return <CircularProgress />
+  if (state.loading) return <CircularProgress />
 
   return (
     <div>
@@ -186,6 +190,7 @@ export const App = observer(() => {
             <Button
               variant="contained"
               color="secondary"
+              disabled={!state.wavesKeeper.initialized}
               onClick={() => {
                 const txData = transactionsStore.rawTransactionForSigning({
                   networkStore
@@ -218,7 +223,7 @@ export const App = observer(() => {
             <Button
               variant="contained"
               color="primary"
-              disabled={!transactionsStore.signedTransaction}
+              disabled={!state.wavesKeeper.initialized}
             >
               Publish
             </Button>
