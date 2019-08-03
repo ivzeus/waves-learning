@@ -16,6 +16,9 @@ import {
   Toolbar,
   Typography
 } from '@material-ui/core'
+import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles'
+import blue from '@material-ui/core/colors/blue'
+import red from '@material-ui/core/colors/red'
 // import {
 //   DialogActions,
 //   DialogContent,
@@ -25,6 +28,16 @@ import {
 import ReactJson from 'react-json-view'
 import { Network, Transactions } from './stores'
 import { NetworkSelect, TransactionSelect } from './components'
+
+const theme = createMuiTheme({
+  palette: {
+    primary: blue,
+    secondary: red
+  },
+  status: {
+    danger: 'orange'
+  }
+})
 
 export const App = observer(props => {
   const networkStore = useContext(Network)
@@ -76,7 +89,7 @@ export const App = observer(props => {
   if (state.loading) return <LinearProgress />
 
   return (
-    <div>
+    <MuiThemeProvider theme={theme}>
       <AppBar position="static">
         <Toolbar>
           <IconButton edge="start" color="inherit" aria-label="menu">
@@ -272,7 +285,7 @@ export const App = observer(props => {
           ]}
         />
       </Grid>
-    </div>
+    </MuiThemeProvider>
   )
 })
 
