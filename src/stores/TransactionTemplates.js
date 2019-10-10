@@ -16,7 +16,11 @@ const TransactionTemplates = [
     assetId: 'WAVES',
     attachment: 'any_message'
   }, // transfer
-  {}, // reissue
+  {
+    assetId: 'WAVES',
+    quantity: 1,
+    reissuable: true
+  }, // reissue
   {}, // burn
   {}, // exchange
   {}, // lease
