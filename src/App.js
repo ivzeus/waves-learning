@@ -363,7 +363,7 @@ export const App = observer(props => {
                 />
               </DialogContent>
               <DialogActions>
-                <Button onClick={handleClose}>
+                <Button onClick={() => handleClose(IMPORT_DIALOG)}>
                   Cancel
                 </Button>
                 <Button onClick={() => {

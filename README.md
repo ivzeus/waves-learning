@@ -1,68 +1,31 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# WAVES TX CREATOR
 
-## Available Scripts
-
-In the project directory, you can run:
-
-### `npm start`
-
-Runs the app in the development mode.<br>
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-
-The page will reload if you make edits.<br>
-You will also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.<br>
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.<br>
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
-
-### Analyzing the Bundle Size
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
-
-### Making a Progressive Web App
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
-
-### Advanced Configuration
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
-
-### Deployment
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
-
-### `npm run build` fails to minify
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+## Steps
+- Install WaveeKeeper plugin on your browser, create an account
+- Launch the [website](https://waves-tx-creator.herokuapp.com/)
+- WavesKeeper will ask if you allow website to access it
+![Authenticate web with WavesKeeper](./docs/tut_step_01_auth.png "tutorial")
+- Choose `Auth`
+![Authenticate web with WavesKeeper](./docs/tut_step_02_auth.png "tutorial")
+- Make sure you have the blue message below. Then choose a Transaction type (eg `ReIssue Transaction`)
+![Choose a transaction type](./docs/tut_step_03_select_tx.png "tutorial")
+- Make changes to the transaction data as you like. If you're unsure which parameters to change, read the Waves documentation first
+![Edit transaction data](./docs/tut_step_04_edit_tx.png "tutorial")
+- Sign the transaction: choose a `Proof Order` (if your AssetScript requires multisig), or leave it 0, then click `SET PROOF`
+- WavesKeeper will ask for your confirmation, check the transaction detail and click `Sign` in the lower right
+![Sign tx](./docs/tut_step_05_confirm_sign_tx.png "tutorial")
+- Your transaction is signed, now hit `Close` button
+![Sign tx](./docs/tut_step_06_complete_sign_tx.png "tutorial")
+- The signed transaction data will appear on the right side. You can choose to `PUBLISH`, or copy the data then pass on to others for signing
+![Sign tx](./docs/tut_step_07_signed_tx.png "tutorial")
+- Confirm to broadcast transaction, when broadcasted the transaction is **irreversible**:
+![Broadcast tx](./docs/tut_step_08_confirm_broadcast_tx.png "tutorial")
+- Wait for the broadcast to finish, you will get message with link to transaction for review
+![Success tx](./docs/tut_step_09_tx_success.png "tutorial")
+- In case you want to pass the signed transaction data around for multi-signing, copy it then send to your colleague using whateve means you find safe. Then your colleague should use the `IMPORT` function
+![Import tx](./docs/tut_step_10_import_tx.png "tutorial")
+- Paste the content in the textbox, then choose `IMPORT`
+![Import tx](./docs/tut_step_11_import_tx.png "tutorial")
+- Now choose a different `Proof Order` and `ADD PROOF`, complete the signing in WavesKeeper
+![Import tx](./docs/tut_step_12_add_proof_tx.png "tutorial")
+- Repeat the steps until you reach your minimum requirement for multisig, then `PUBLISH` the transaction
