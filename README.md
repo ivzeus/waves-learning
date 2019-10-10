@@ -3,20 +3,20 @@
 ## Steps
 - Install WaveeKeeper plugin on your browser, create an account
 - Launch the [website](https://waves-tx-creator.herokuapp.com/)
-- WavesKeeper will ask if you allow website to access it
+- WavesKeeper will ask if you allow website to access it<br/>
 ![Authenticate web with WavesKeeper](./docs/tut_step_01_auth.png "tutorial")
-- Choose `Auth`
+- Choose `Auth`<br/>
 ![Authenticate web with WavesKeeper](./docs/tut_step_02_auth.png "tutorial")
 - Make sure you have the blue message below. Then choose a Transaction type (eg `ReIssue Transaction`)
 ![Choose a transaction type](./docs/tut_step_03_select_tx.png "tutorial")
-- Make changes to the transaction data as you like. If you're unsure which parameters to change, read the Waves documentation first
+- Make changes to the transaction data as you like. If you're unsure which parameters to change, read the Waves documentation first<br/>
 ![Edit transaction data](./docs/tut_step_04_edit_tx.png "tutorial")
 - Sign the transaction: choose a `Proof Order` (if your AssetScript requires multisig), or leave it 0, then click `SET PROOF`
-- WavesKeeper will ask for your confirmation, check the transaction detail and click `Sign` in the lower right
+- WavesKeeper will ask for your confirmation, check the transaction detail and click `Sign` in the lower right<br/>
 ![Sign tx](./docs/tut_step_05_confirm_sign_tx.png "tutorial")
-- Your transaction is signed, now hit `Close` button
+- Your transaction is signed, now hit `Close` button<br/>
 ![Sign tx](./docs/tut_step_06_complete_sign_tx.png "tutorial")
-- The signed transaction data will appear on the right side. You can choose to `PUBLISH`, or copy the data then pass on to others for signing
+- The signed transaction data will appear on the right side. You can choose to `PUBLISH`, or copy the data then pass on to others for signing<br/>
 ![Sign tx](./docs/tut_step_07_signed_tx.png "tutorial")
 - Confirm to broadcast transaction, when broadcasted the transaction is **irreversible**:
 ![Broadcast tx](./docs/tut_step_08_confirm_broadcast_tx.png "tutorial")
