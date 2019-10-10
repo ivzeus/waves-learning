@@ -158,7 +158,7 @@ export const App = observer(props => {
               </Typography>
             ) : (
                 <Typography variant="subtitle1" component="h3" color="error">
-                  WavesKeeper not installed!
+                  WavesKeeper plugin is not installed on your browser. It is required to sign your transactions!
               </Typography>
               )}
           </Paper>
@@ -205,16 +205,17 @@ export const App = observer(props => {
             </Paper>
           </Grid>
 
-          <Grid item sm={12} md={4}>
-            <Paper className="Margin-10 Padding-20">
-              <Typography variant="body2">Signed transaction:</Typography>
-              <ReactJson
-                src={transactionsStore.signedTransaction}
-                style={{ textAlign: 'left' }}
-                collapseStringsAfterLength={20}
-              />
-            </Paper>
-          </Grid>
+          {state.wavesKeeper.initialized &&
+            <Grid item sm={12} md={4}>
+              <Paper className="Margin-10 Padding-20">
+                <Typography variant="body2">Signed transaction:</Typography>
+                <ReactJson
+                  src={transactionsStore.signedTransaction}
+                  style={{ textAlign: 'left' }}
+                  collapseStringsAfterLength={20}
+                />
+              </Paper>
+            </Grid>}
         </Grid>
 
         <Grid
@@ -332,7 +333,7 @@ export const App = observer(props => {
             )}
           </Grid>
 
-          <Grid
+          {state.wavesKeeper.initialized && (<Grid
             container
             justify="flex-start"
             alignItems="flex-end"
@@ -387,7 +388,7 @@ export const App = observer(props => {
               </Button>
               </Grid>
             )}
-          </Grid>
+          </Grid>)}
         </Grid>
         <Dialog
           open={openConfirmDialog}
