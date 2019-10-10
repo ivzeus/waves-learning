@@ -5,10 +5,12 @@ export class Network {
   NETWORK_CONFIG = {
     testnet: {
       url: 'https://testnodes.wavesnodes.com/',
+      explorer: 'https://wavesexplorer.com/testnet/tx',
       chainID: 84
     },
     mainnet: {
       url: 'https://nodes.wavesplatform.com',
+      explorer: 'https://wavesexplorer.com/tx',
       chainID: 82
     }
   }
@@ -37,7 +39,12 @@ export class Network {
     this._networkURL = this.NETWORK_CONFIG[network].url
   }
 
-  addNetworkConfig({ network, chainId, url }) {}
+  addNetworkConfig({ network, chainId, url }) { }
+
+  getTransactionLink(network, txId) {
+    if (network !== 'testnet' && network !== 'mainnet') return
+    return `${this.NETWORK_CONFIG[network].explorer}/${txId}`
+  }
 }
 
 decorate(Network, {

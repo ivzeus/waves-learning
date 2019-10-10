@@ -19,7 +19,8 @@ const TransactionTemplates = [
   {
     assetId: 'WAVES',
     quantity: 1,
-    reissuable: true
+    reissuable: true,
+    fee: 100800000
   }, // reissue
   {}, // burn
   {}, // exchange

@@ -4,6 +4,11 @@ import './App.css'
 import {
   AppBar,
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Grid,
   Icon,
   IconButton,
@@ -17,19 +22,12 @@ import {
   Toolbar,
   Typography
 } from '@material-ui/core'
-import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle
-} from '@material-ui/core'
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles'
-import blue from '@material-ui/core/colors/blue'
-import red from '@material-ui/core/colors/red'
+import { blue, red } from '@material-ui/core/colors'
 import ReactJson from 'react-json-view'
 import { Network, Transactions } from './stores'
 import { NetworkSelect, TransactionSelect } from './components'
+import { WaveUtils } from './utils'
 
 const theme = createMuiTheme({
   palette: {
@@ -41,20 +39,32 @@ const theme = createMuiTheme({
   }
 })
 
+const CONFIRM_DIALOG = 'confirmDialog'
+const IMPORT_DIALOG = 'importDialog'
+
 export const App = observer(props => {
   const networkStore = useContext(Network)
   const transactionsStore = useContext(Transactions)
-  const [open, setOpen] = useState(false)
+  const [openImportDialog, setOpenImportDialog] = useState(false)
+  const [openConfirmDialog, setOpenConfirmDialog] = useState(false)
   const [values, setValues] = useState({
     importTxData: ''
   })
 
-  const handleClickOpen = () => {
-    setOpen(true);
+  const handleClickOpen = (id) => {
+    if (id === CONFIRM_DIALOG) {
+      setOpenConfirmDialog(true)
+    } else if (id === IMPORT_DIALOG) {
+      setOpenImportDialog(true)
+    }
   };
 
-  const handleClose = () => {
-    setOpen(false);
+  const handleClose = (id) => {
+    if (id === CONFIRM_DIALOG) {
+      setOpenConfirmDialog(false)
+    } else if (id === IMPORT_DIALOG) {
+      setOpenImportDialog(false)
+    }
   };
 
   const handleChange = name => event => {
@@ -65,7 +75,10 @@ export const App = observer(props => {
     loading: true,
     proofOrder: 0,
     wavesKeeper: { initialized: false },
-    showSnackbar: false,
+    showSuccessSnackBar: false,
+    showErrorSnackbar: false,
+    successMessage: '',
+    successLink: '',
     errorMessage: '',
     setProofOrder(order) {
       state.proofOrder = order
@@ -73,13 +86,24 @@ export const App = observer(props => {
     setLoading(loading) {
       state.loading = loading
     },
+    setSuccess(message = null, link = null) {
+      if (message) {
+        state.successMessage = message
+        state.successLink = link
+        state.showSuccessSnackBar = true
+      } else {
+        state.successMessage = ''
+        state.successLink = ''
+        state.showSuccessSnackBar = false
+      }
+    },
     setError(errorMessage = null) {
       if (errorMessage) {
         state.errorMessage = errorMessage
-        state.showSnackbar = true
+        state.showErrorSnackbar = true
       } else {
         state.errorMessage = ''
-        state.showSnackbar = false
+        state.showErrorSnackbar = false
       }
     },
     setWavesKeeper(info) {
@@ -127,18 +151,6 @@ export const App = observer(props => {
         >
           <Paper
             className="Padding-10"
-          // open={true}
-          // anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-          // ContentProps={{
-          //   'aria-describedby': 'message-id'
-          // }}
-          // message={
-          //   <span id="message-id">
-          //     {state.wavesKeeper.initialized
-          //       ? `WavesKeeper v${state.wavesKeeper.version} initialized!`
-          //       : 'WavesKeeper not installed'}
-          //   </span>
-          // }
           >
             {state.wavesKeeper.initialized ? (
               <Typography variant="subtitle1" component="h3" color="primary">
@@ -192,7 +204,7 @@ export const App = observer(props => {
               />
             </Paper>
           </Grid>
-          {/* <Grid item sm={0} md={1} /> */}
+
           <Grid item sm={12} md={4}>
             <Paper className="Margin-10 Padding-20">
               <Typography variant="body2">Signed transaction:</Typography>
@@ -217,7 +229,8 @@ export const App = observer(props => {
             alignItems="flex-end"
             className="Padding-10"
             sm={12}
-            md={4}>
+            md={4}
+            item>
 
             {state.wavesKeeper.initialized && (
               <Grid item className="Margin-10">
@@ -325,11 +338,12 @@ export const App = observer(props => {
             alignItems="flex-end"
             className="Padding-10"
             sm={12}
-            md={4}>
+            md={4}
+            item>
             <Grid item className="Margin-10">
-              <Button variant="contained" onClick={handleClickOpen}>Import</Button>
+              <Button variant="contained" onClick={() => handleClickOpen(IMPORT_DIALOG)}>Import</Button>
             </Grid>
-            <Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
+            <Dialog open={openImportDialog} onClose={() => handleClose(IMPORT_DIALOG)} aria-labelledby="form-dialog-title">
               <DialogTitle id="form-dialog-title">Import Tx</DialogTitle>
               <DialogContent>
                 <DialogContentText>
@@ -359,7 +373,7 @@ export const App = observer(props => {
                   } catch (err) {
                     console.log(err)
                   }
-                  handleClose()
+                  handleClose(IMPORT_DIALOG)
                 }} color="primary">
                   Import
                 </Button>
@@ -368,20 +382,77 @@ export const App = observer(props => {
 
             {state.wavesKeeper.initialized && (
               <Grid item className="Margin-10">
-                <Button variant="contained" color="primary">
+                <Button variant="contained" color="primary" onClick={() => handleClickOpen(CONFIRM_DIALOG)}>
                   Publish
               </Button>
               </Grid>
             )}
           </Grid>
         </Grid>
+        <Dialog
+          open={openConfirmDialog}
+          onClose={() => handleClose(CONFIRM_DIALOG)}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">{"Publish transaction?"}</DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description">
+              Once published, the transaction cannot be reversed, your fund maybe at risk! Are you sure you want to proceed?
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => handleClose(CONFIRM_DIALOG)} color="primary" autoFocus>
+              Disagree
+            </Button>
+            <Button onClick={() => {
+              state.setLoading(true)
+              WaveUtils.broadcastTx(transactionsStore.signedTransaction, networkStore.url)
+                .then(resp => {
+                  state.setSuccess('Transaction success', networkStore.getTransactionLink(networkStore.ID, resp.id))
+                  console.log('Waves send tx success')
+                  console.log(resp)
+                  state.setLoading(false)
+                })
+                .catch(error => {
+                  console.log(error)
+                  state.setError(error.message)
+                  state.setLoading(false)
+                })
+              handleClose(CONFIRM_DIALOG)
+            }
+            } color="secondary">
+              Agree
+            </Button>
+          </DialogActions>
+        </Dialog>
 
         <Snackbar
           anchorOrigin={{
             vertical: 'bottom',
             horizontal: 'left'
           }}
-          open={state.showSnackbar}
+          className='success'
+          open={state.showSuccessSnackBar}
+          autoHideDuration={6000}
+          onClose={() => state.setSuccess()}
+          ContentProps={{
+            'aria-describedby': 'message-id'
+          }}
+          message={<span id="message-id">{state.successMessage}</span>}
+          action={[
+            <Button color="secondary" size="small">
+              <a styles={{ color: '#ffffff' }} href={state.successLink} target="_blank">View TX</a>
+            </Button>
+          ]}
+        />
+
+        <Snackbar
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'left'
+          }}
+          open={state.showErrorSnackbar}
           autoHideDuration={4000}
           onClose={() => state.setError()}
           ContentProps={{

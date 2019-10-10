@@ -43,7 +43,6 @@ export class Transactions {
   }
 
   get signedTransaction() {
-    // console.log(toJS(this._signedTxObj))
     return toJS(this._signedTxObj)
   }
 
