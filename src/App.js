@@ -207,157 +207,173 @@ export const App = observer(props => {
 
         <Grid
           container
-          direction="row"
           justify="flex-start"
           alignItems="flex-end"
           className="Padding-10"
         >
-          {state.wavesKeeper.initialized && (
-            <Grid item className="Margin-10">
-              <InputLabel htmlFor="form-select-proof-order">
-                Proof order
-              </InputLabel>
-              <Select
-                displayEmpty
-                value={state.proofOrder}
-                onChange={ev => state.setProofOrder(ev.target.value)}
-                inputProps={{
-                  id: 'form-select-proof-order'
-                }}
-              >
-                <MenuItem value="" disabled>
+          <Grid
+            container
+            justify="flex-start"
+            alignItems="flex-end"
+            className="Padding-10"
+            sm={12}
+            md={4}>
+
+            {state.wavesKeeper.initialized && (
+              <Grid item className="Margin-10">
+                <InputLabel htmlFor="form-select-proof-order">
                   Proof order
+              </InputLabel>
+                <Select
+                  displayEmpty
+                  value={state.proofOrder}
+                  onChange={ev => state.setProofOrder(ev.target.value)}
+                  inputProps={{
+                    id: 'form-select-proof-order'
+                  }}
+                >
+                  <MenuItem value="" disabled>
+                    Proof order
                 </MenuItem>
-                <MenuItem value="0">0</MenuItem>
-                <MenuItem value="1">1</MenuItem>
-                <MenuItem value="2">2</MenuItem>
-                <MenuItem value="3">3</MenuItem>
-                <MenuItem value="4">4</MenuItem>
-                <MenuItem value="5">5</MenuItem>
-              </Select>
-            </Grid>
-          )}
+                  <MenuItem value="0">0</MenuItem>
+                  <MenuItem value="1">1</MenuItem>
+                  <MenuItem value="2">2</MenuItem>
+                  <MenuItem value="3">3</MenuItem>
+                  <MenuItem value="4">4</MenuItem>
+                  <MenuItem value="5">5</MenuItem>
+                </Select>
+              </Grid>
+            )}
 
-          {state.wavesKeeper.initialized && (
-            <Grid item className="Margin-10">
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={() => {
-                  const txData = transactionsStore.rawTransactionForSigning({
-                    networkStore
-                  })
-                  window.WavesKeeper.signTransaction(txData)
-                    .then(data => {
-                      const parsedData = JSON.parse(data)
-                      if (state.proofOrder >= 0) {
-                        // get new signature
-                        const sig = parsedData.proofs[0]
-
-                        // prepare signature arrays
-                        const proofs = []
-                        for (let i = 0; i <= state.proofOrder; i++) proofs.push('')
-                        proofs[state.proofOrder] = sig
-
-                        parsedData.proofs = proofs
-                      }
-                      transactionsStore.updateSignTransaction(parsedData)
+            {state.wavesKeeper.initialized && (
+              <Grid item className="Margin-10">
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  onClick={() => {
+                    const txData = transactionsStore.rawTransactionForSigning({
+                      networkStore
                     })
-                    .catch(error => {
-                      console.log(error)
-                      state.setError(error.message)
-                    })
-                }}
-              >
-                Set Proof
+                    window.WavesKeeper.signTransaction(txData)
+                      .then(data => {
+                        const parsedData = JSON.parse(data)
+                        if (state.proofOrder >= 0) {
+                          // get new signature
+                          const sig = parsedData.proofs[0]
+
+                          // prepare signature arrays
+                          const proofs = []
+                          for (let i = 0; i <= state.proofOrder; i++) proofs.push('')
+                          proofs[state.proofOrder] = sig
+
+                          parsedData.proofs = proofs
+                        }
+                        transactionsStore.updateSignTransaction(parsedData)
+                      })
+                      .catch(error => {
+                        console.log(error)
+                        state.setError(error.message)
+                      })
+                  }}
+                >
+                  Set Proof
               </Button>
-            </Grid>
-          )}
+              </Grid>
+            )}
 
-          {state.wavesKeeper.initialized && transactionsStore.hasPendingTransaction && (
-            <Grid item className="Margin-10">
-              <Button
-                variant="contained"
-                onClick={() => {
-                  const signedTx = transactionsStore.signedTransaction
-                  const { type, proofs, ...others } = signedTx
-                  const txData = {
-                    type,
-                    data: { ...others }
-                  }
-                  window.WavesKeeper.signTransaction(txData)
-                    .then(data => {
-                      const parsedData = JSON.parse(data)
-                      if (state.proofOrder >= 0) {
-                        // get new signature
-                        const sig = parsedData.proofs[0]
+            {state.wavesKeeper.initialized && transactionsStore.hasPendingTransaction && (
+              <Grid item className="Margin-10">
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    const signedTx = transactionsStore.signedTransaction
+                    const { type, proofs, ...others } = signedTx
+                    const txData = {
+                      type,
+                      data: { ...others }
+                    }
+                    window.WavesKeeper.signTransaction(txData)
+                      .then(data => {
+                        const parsedData = JSON.parse(data)
+                        if (state.proofOrder >= 0) {
+                          // get new signature
+                          const sig = parsedData.proofs[0]
 
-                        // prepare signature arrays
-                        for (let i = proofs.length; i <= state.proofOrder; i++) proofs.push('')
-                        proofs[state.proofOrder] = sig
+                          // prepare signature arrays
+                          for (let i = proofs.length; i <= state.proofOrder; i++) proofs.push('')
+                          proofs[state.proofOrder] = sig
 
-                        parsedData.proofs = proofs
-                      }
-                      transactionsStore.updateSignTransaction(parsedData)
-                    })
-                    .catch(error => {
-                      console.log(error)
-                      state.setError(error.message)
-                    })
-                }}
-              >
-                Add Proof
+                          parsedData.proofs = proofs
+                        }
+                        transactionsStore.updateSignTransaction(parsedData)
+                      })
+                      .catch(error => {
+                        console.log(error)
+                        state.setError(error.message)
+                      })
+                  }}
+                >
+                  Add Proof
               </Button>
-            </Grid>
-          )}
-
-          <Grid item className="Margin-10">
-            <Button variant="contained" onClick={handleClickOpen}>Import</Button>
+              </Grid>
+            )}
           </Grid>
-          <Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
-            <DialogTitle id="form-dialog-title">Import Tx</DialogTitle>
-            <DialogContent>
-              <DialogContentText>
-                Paste your signed transaction data into the textbox below:
-              </DialogContentText>
-              <TextField
-                autoFocus
-                margin="dense"
-                id="name"
-                placeholder="Transaction data"
-                fullWidth
-                multiline
-                rows="8"
-                rowsMax="20"
-                onChange={handleChange('importTxData')}
-              />
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleClose}>
-                Cancel
-          </Button>
-              <Button onClick={() => {
-                try {
-                  const txData = values.importTxData
-                  const txObj = JSON.parse(txData)
-                  transactionsStore.updateSignTransaction(txObj)
-                } catch (err) {
-                  console.log(err)
-                }
-                handleClose()
-              }} color="primary">
-                Import
-          </Button>
-            </DialogActions>
-          </Dialog>
 
-          {state.wavesKeeper.initialized && (
+          <Grid
+            container
+            justify="flex-start"
+            alignItems="flex-end"
+            className="Padding-10"
+            sm={12}
+            md={4}>
             <Grid item className="Margin-10">
-              <Button variant="contained" color="primary">
-                Publish
-              </Button>
+              <Button variant="contained" onClick={handleClickOpen}>Import</Button>
             </Grid>
-          )}
+            <Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
+              <DialogTitle id="form-dialog-title">Import Tx</DialogTitle>
+              <DialogContent>
+                <DialogContentText>
+                  Paste your signed transaction data into the textbox below:
+              </DialogContentText>
+                <TextField
+                  autoFocus
+                  margin="dense"
+                  id="name"
+                  placeholder="Transaction data"
+                  fullWidth
+                  multiline
+                  rows="8"
+                  rowsMax="20"
+                  onChange={handleChange('importTxData')}
+                />
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={handleClose}>
+                  Cancel
+                </Button>
+                <Button onClick={() => {
+                  try {
+                    const txData = values.importTxData
+                    const txObj = JSON.parse(txData)
+                    transactionsStore.updateSignTransaction(txObj)
+                  } catch (err) {
+                    console.log(err)
+                  }
+                  handleClose()
+                }} color="primary">
+                  Import
+                </Button>
+              </DialogActions>
+            </Dialog>
+
+            {state.wavesKeeper.initialized && (
+              <Grid item className="Margin-10">
+                <Button variant="contained" color="primary">
+                  Publish
+              </Button>
+              </Grid>
+            )}
+          </Grid>
         </Grid>
 
         <Snackbar
