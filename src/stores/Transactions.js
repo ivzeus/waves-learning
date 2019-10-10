@@ -6,6 +6,7 @@ export class Transactions {
   _txType = 4
   _rawTxObj = TransactionTemplates[4]
   _signedTxObj = {}
+  _pendingRawTransaction = false
 
   _getTransactionTemplate(type) {
     try {
@@ -26,6 +27,10 @@ export class Transactions {
     return toJS(this._rawTxObj)
   }
 
+  get hasPendingTransaction() {
+    return this._pendingRawTransaction
+  }
+
   rawTransactionForSigning({ networkStore }) {
     const _rawTx = {
       type: this._txType,
@@ -38,11 +43,11 @@ export class Transactions {
   }
 
   get signedTransaction() {
-    console.log(toJS(this._signedTxObj))
+    // console.log(toJS(this._signedTxObj))
     return toJS(this._signedTxObj)
   }
 
-  addProof(order, signature) {}
+  addProof(order, signature) { }
 
   updateRawTransaction(data) {
     this._rawTxObj = data
@@ -50,12 +55,14 @@ export class Transactions {
 
   updateSignTransaction(data) {
     this._signedTxObj = data
+    this._pendingRawTransaction = true
   }
 
   setTransaction(type) {
     this._txType = type
     this._rawTxObj = this._getTransactionTemplate(type)
     this._signedTxObj = {}
+    this._pendingRawTransaction = false
   }
 }
 
@@ -63,9 +70,11 @@ decorate(Transactions, {
   _txType: observable,
   _rawTxObj: observable,
   _signedTxObj: observable,
+  _pendingRawTransaction: observable,
   transactionType: computed,
   rawTransaction: computed,
   signedTransaction: computed,
+  hasPendingTransaction: computed,
   addProof: action,
   updateRawTransaction: action,
   setTransaction: action

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react'
+import React, { useContext, useState, useEffect } from 'react'
 import { observer, useObservable } from 'mobx-react-lite'
 import './App.css'
 import {
@@ -13,18 +13,20 @@ import {
   Paper,
   Select,
   Snackbar,
+  TextField,
   Toolbar,
   Typography
+} from '@material-ui/core'
+import {
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle
 } from '@material-ui/core'
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles'
 import blue from '@material-ui/core/colors/blue'
 import red from '@material-ui/core/colors/red'
-// import {
-//   DialogActions,
-//   DialogContent,
-//   DialogContentText,
-//   DialogTitle
-// } from '@material-ui/core'
 import ReactJson from 'react-json-view'
 import { Network, Transactions } from './stores'
 import { NetworkSelect, TransactionSelect } from './components'
@@ -42,6 +44,15 @@ const theme = createMuiTheme({
 export const App = observer(props => {
   const networkStore = useContext(Network)
   const transactionsStore = useContext(Transactions)
+  const [open, setOpen] = useState(false)
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
 
   const state = useObservable({
     loading: true,
@@ -109,28 +120,28 @@ export const App = observer(props => {
         >
           <Paper
             className="Padding-10"
-            // open={true}
-            // anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-            // ContentProps={{
-            //   'aria-describedby': 'message-id'
-            // }}
-            // message={
-            //   <span id="message-id">
-            //     {state.wavesKeeper.initialized
-            //       ? `WavesKeeper v${state.wavesKeeper.version} initialized!`
-            //       : 'WavesKeeper not installed'}
-            //   </span>
-            // }
+          // open={true}
+          // anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+          // ContentProps={{
+          //   'aria-describedby': 'message-id'
+          // }}
+          // message={
+          //   <span id="message-id">
+          //     {state.wavesKeeper.initialized
+          //       ? `WavesKeeper v${state.wavesKeeper.version} initialized!`
+          //       : 'WavesKeeper not installed'}
+          //   </span>
+          // }
           >
             {state.wavesKeeper.initialized ? (
               <Typography variant="subtitle1" component="h3" color="primary">
                 WavesKeeper v{state.wavesKeeper.version} initialized!
               </Typography>
             ) : (
-              <Typography variant="subtitle1" component="h3" color="error">
-                WavesKeeper not installed!
+                <Typography variant="subtitle1" component="h3" color="error">
+                  WavesKeeper not installed!
               </Typography>
-            )}
+              )}
           </Paper>
         </Grid>
 
@@ -161,6 +172,7 @@ export const App = observer(props => {
               <ReactJson
                 src={transactionsStore.rawTransaction}
                 style={{ textAlign: 'left' }}
+                collapseStringsAfterLength={20}
                 onEdit={edit =>
                   transactionsStore.updateRawTransaction(edit.updated_src)
                 }
@@ -180,6 +192,7 @@ export const App = observer(props => {
               <ReactJson
                 src={transactionsStore.signedTransaction}
                 style={{ textAlign: 'left' }}
+                collapseStringsAfterLength={20}
               />
             </Paper>
           </Grid>
@@ -230,10 +243,53 @@ export const App = observer(props => {
                   window.WavesKeeper.signTransaction(txData)
                     .then(data => {
                       const parsedData = JSON.parse(data)
-                      if (state.proofOrder > 0) {
+                      if (state.proofOrder >= 0) {
+                        // get new signature
                         const sig = parsedData.proofs[0]
-                        parsedData.proofs[0] = ''
-                        parsedData.proofs[state.proofOrder] = sig
+
+                        // prepare signature arrays
+                        const proofs = []
+                        for (let i = 0; i <= state.proofOrder; i++) proofs.push('')
+                        proofs[state.proofOrder] = sig
+
+                        parsedData.proofs = proofs
+                      }
+                      transactionsStore.updateSignTransaction(parsedData)
+                    })
+                    .catch(error => {
+                      console.log(error)
+                      state.setError(error.message)
+                    })
+                }}
+              >
+                Set Proof
+              </Button>
+            </Grid>
+          )}
+
+          {state.wavesKeeper.initialized && transactionsStore.hasPendingTransaction && (
+            <Grid item className="Margin-10">
+              <Button
+                variant="contained"
+                onClick={() => {
+                  const signedTx = transactionsStore.signedTransaction
+                  const { type, proofs, ...others } = signedTx
+                  const txData = {
+                    type,
+                    data: { ...others }
+                  }
+                  window.WavesKeeper.signTransaction(txData)
+                    .then(data => {
+                      const parsedData = JSON.parse(data)
+                      if (state.proofOrder >= 0) {
+                        // get new signature
+                        const sig = parsedData.proofs[0]
+
+                        // prepare signature arrays
+                        for (let i = proofs.length; i <= state.proofOrder; i++) proofs.push('')
+                        proofs[state.proofOrder] = sig
+
+                        parsedData.proofs = proofs
                       }
                       transactionsStore.updateSignTransaction(parsedData)
                     })
@@ -249,8 +305,43 @@ export const App = observer(props => {
           )}
 
           <Grid item className="Margin-10">
-            <Button variant="contained">Copy</Button>
+            <Button variant="contained" onClick={handleClickOpen}>Import</Button>
           </Grid>
+          <Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
+            <DialogTitle id="form-dialog-title">Import Tx</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                Paste your signed transaction data here:
+              </DialogContentText>
+              <TextField
+                autoFocus
+                margin="dense"
+                id="name"
+                label="Transaction data"
+                fullWidth
+                multiline
+                rows="8"
+                rowsMax="12"
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleClose}>
+                Cancel
+          </Button>
+              <Button onClick={() => {
+                try {
+                  const txData = '{"type":5,"version":2,"senderPublicKey":"5gUuv1jjtePpX8rffb1RvQ6FvX2oJ2rNshfF9Dt2NUES","assetId":"WAVES","quantity":1,"reissuable":true,"chainId":84,"fee":100000000,"timestamp":1570669799347,"proofs":["4wBvwq8eE6VeUCaQMo9aSWL1AZPCXsyiestgCAhdNFMtn3M85vcQgrs3fyKwmLjfRtSGdKMnL7dnqehMR9A2wfcg"],"id":"ACSqbvtWo2DpPM76QGEDdD1iXeq3pJHdcdFcRvpzDQR9"}'
+                  const txObj = JSON.parse(txData)
+                  transactionsStore.updateSignTransaction(txObj)
+                } catch (err) {
+                  console.log(err)
+                }
+                handleClose()
+              }} color="primary">
+                Import
+          </Button>
+            </DialogActions>
+          </Dialog>
 
           {state.wavesKeeper.initialized && (
             <Grid item className="Margin-10">
