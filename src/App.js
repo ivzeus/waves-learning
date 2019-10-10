@@ -45,6 +45,9 @@ export const App = observer(props => {
   const networkStore = useContext(Network)
   const transactionsStore = useContext(Transactions)
   const [open, setOpen] = useState(false)
+  const [values, setValues] = useState({
+    importTxData: ''
+  })
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -52,6 +55,10 @@ export const App = observer(props => {
 
   const handleClose = () => {
     setOpen(false);
+  };
+
+  const handleChange = name => event => {
+    setValues({ ...values, [name]: event.target.value });
   };
 
   const state = useObservable({
@@ -311,17 +318,18 @@ export const App = observer(props => {
             <DialogTitle id="form-dialog-title">Import Tx</DialogTitle>
             <DialogContent>
               <DialogContentText>
-                Paste your signed transaction data here:
+                Paste your signed transaction data into the textbox below:
               </DialogContentText>
               <TextField
                 autoFocus
                 margin="dense"
                 id="name"
-                label="Transaction data"
+                placeholder="Transaction data"
                 fullWidth
                 multiline
                 rows="8"
-                rowsMax="12"
+                rowsMax="20"
+                onChange={handleChange('importTxData')}
               />
             </DialogContent>
             <DialogActions>
@@ -330,7 +338,7 @@ export const App = observer(props => {
           </Button>
               <Button onClick={() => {
                 try {
-                  const txData = '{"type":5,"version":2,"senderPublicKey":"5gUuv1jjtePpX8rffb1RvQ6FvX2oJ2rNshfF9Dt2NUES","assetId":"WAVES","quantity":1,"reissuable":true,"chainId":84,"fee":100000000,"timestamp":1570669799347,"proofs":["4wBvwq8eE6VeUCaQMo9aSWL1AZPCXsyiestgCAhdNFMtn3M85vcQgrs3fyKwmLjfRtSGdKMnL7dnqehMR9A2wfcg"],"id":"ACSqbvtWo2DpPM76QGEDdD1iXeq3pJHdcdFcRvpzDQR9"}'
+                  const txData = values.importTxData
                   const txObj = JSON.parse(txData)
                   transactionsStore.updateSignTransaction(txObj)
                 } catch (err) {
