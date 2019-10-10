@@ -138,7 +138,7 @@ export const App = observer(props => {
             <Icon>settings</Icon>
           </IconButton>
 
-          <Typography variant="h6">Waves Transaction helper</Typography>
+          <Typography variant="h6">Waves Transaction creator</Typography>
         </Toolbar>
       </AppBar>
 
@@ -432,7 +432,6 @@ export const App = observer(props => {
             vertical: 'bottom',
             horizontal: 'left'
           }}
-          className='success'
           open={state.showSuccessSnackBar}
           autoHideDuration={6000}
           onClose={() => state.setSuccess()}
@@ -442,7 +441,7 @@ export const App = observer(props => {
           message={<span id="message-id">{state.successMessage}</span>}
           action={[
             <Button color="secondary" size="small">
-              <a styles={{ color: '#ffffff' }} href={state.successLink} target="_blank">View TX</a>
+              <a styles={{ color: '#ffffff' }} href={state.successLink} rel="noopener noreferrer" target="_blank">View TX</a>
             </Button>
           ]}
         />

@@ -8,19 +8,22 @@ const TransactionTemplates = [
       coins: 0,
       assetId: 'WAVES'
     },
-    recipient: 'recipient_address',
+    recipient: '<recipient_address>',
     fee: {
       coins: 1000000,
       assetId: 'WAVES'
     },
     assetId: 'WAVES',
-    attachment: 'any_message'
+    attachment: '<any_message>'
   }, // transfer
   {
     assetId: 'WAVES',
     quantity: 1,
     reissuable: true,
-    fee: 100800000
+    fee: {
+      coins: 100800000,
+      assetId: 'WAVES'
+    }
   }, // reissue
   {}, // burn
   {}, // exchange
@@ -28,9 +31,19 @@ const TransactionTemplates = [
   {}, // cancel lease
   {}, // alias
   {}, // mass transfer
-  {}, // data
   {
-    script: 'base64:compiled_script',
+    data: [{
+      "type": "string",
+      "value": "<input_value_here>",
+      "key": "<input_key_here>"
+    }],
+    fee: {
+      coins: 500000,
+      assetId: 'WAVES'
+    }
+  }, // data
+  {
+    script: 'base64:<compiled_script>',
     fee: {
       coins: 100400000,
       assetId: 'WAVES'
@@ -39,7 +52,7 @@ const TransactionTemplates = [
   {}, // sponsor
   {
     assetId: 'asset_id',
-    script: 'base64:compiled_script',
+    script: 'base64:<compiled_script>',
     fee: {
       coins: 100400000,
       assetId: 'WAVES'
